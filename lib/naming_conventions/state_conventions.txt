@@ -1,0 +1,45 @@
+2)State Conventions
+
+States should be nouns because a state is just a snapshot at a particular point in time. There are two common ways to represent state: using subclasses or using a single class.
+
+Anatomy of a State
+
+Subclasses: BlocSubject + Verb (action) + State
+
+    State should be one of the following: | Initial | Success | Failure | InProgress
+
+Initial State: BlocSubject + Initial
+
+Single Class: BlocSubject + State
+
+    State should be one of the following: | initial | success | failure | loading.
+
+
+✅ Good Subclasses
+
+abstract class CounterState {}
+class CounterInitial extends CounterState {}
+class CounterLoadInProgress extends CounterState {}
+class CounterLoadSuccess extends CounterState {}
+class CounterLoadFailure extends CounterState {}
+
+✅ Good Single Class
+
+enum CounterStatus { initial, loading, success, failure }
+class CounterState {
+  const CounterState({this.status = CounterStatus.initial});
+  final CounterStatus status;
+}
+
+❌ Bad
+
+abstract class CounterState {}
+class Initial extends CounterState {}
+class Loading extends CounterState {}
+class Success extends CounterState {}
+class Succeeded extends CounterState {}
+class Loaded extends CounterState {}
+class Failure extends CounterState {}
+class Failed extends CounterState {}
+
+

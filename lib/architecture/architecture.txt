@@ -1,0 +1,78 @@
+Using the bloc library allows us to separate our application into three layers:
+
+-Presentation
+-Business Logic
+-Data
+  -Repository
+  -Data Provider
+
+
+
+1)Data Layer
+ This layer is the lowest level of the application and interacts with databases, network requests, and other asynchronous data sources
+
+ 1.1) Data Provider
+    The data provider will usually expose simple APIs to perform CRUD operations. We might have    a createData, readData, updateData, and deleteData method as part of our data layer.
+
+      class DataProvider {
+          Future<RawData> readData() async {
+              // Read from DB or make network request etc...
+          }
+      }
+
+
+ 1.2) Repository
+    The repository layer is a wrapper around one or more data providers with which the Bloc Layer communicates
+    As you can see, our repository layer can interact with multiple data providers and perform transformations on the data before handing the result to the business logic Layer.
+
+    class Repository {
+        final DataProviderA dataProviderA;
+        final DataProviderB dataProviderB;
+
+        Future<Data> getAllDataThatMeetsRequirements() async {
+            final RawDataA dataSetA = await dataProviderA.readData();
+            final RawDataB dataSetB = await dataProviderB.readData();
+
+            final Data filteredData = _filterData(dataSetA, dataSetB);
+            return filteredData;
+        }
+    }
+
+2)Business Logic Layer
+    The business logic layer's responsibility is to respond to input from the presentation layer with new states. This layer can depend on one or more repositories to retrieve data needed to build up the application state.
+
+    class BusinessLogicComponent extends Bloc<MyEvent, MyState> {
+        BusinessLogicComponent(this.repository) {
+            on<AppStarted>((event, emit) {
+                try {
+                    final data = await repository.getAllDataThatMeetsRequirements();
+                    emit(Success(data));
+                } catch (error) {
+                    emit(Failure(error));
+                }
+            });
+        }
+
+        final Repository repository;
+    }
+
+
+3)Presentation Layer
+    The presentation layer's responsibility is to figure out how to render itself based on one or more bloc states. In addition, it should handle user input and application lifecycle events.
+
+    In addition, the presentation layer will have to figure out what to render on the screen based on the state from the bloc layer
+
+    class PresentationComponent {
+        final Bloc bloc;
+
+        PresentationComponent() {
+            bloc.add(AppStarted());
+        }
+
+        build() {
+            // render UI based on bloc state
+        }
+    }
+
+
+
